@@ -37,9 +37,10 @@ def kmeans(samples, k, threshold=0.1):
         error = 0
         for class_id in range(len(classes)):
             samples_in_class = samples[classes[class_id]]
-            new_center = numpy.mean(samples_in_class, axis=0)
-            centers[class_id] = new_center
-            error_from_center = sum([ sqdist(s, new_center) for s in samples_in_class])
+            if numpy.any(samples_in_class):
+                new_center = numpy.mean(samples_in_class, axis=0)
+                centers[class_id] = new_center
+            error_from_center = sum([ sqdist(s, centers[class_id]) for s in samples_in_class])
             error += error_from_center
         iterations += 1
     return classes, centers, error, iterations
