@@ -10,16 +10,13 @@ def kmeans(samples, k, threshold=0.1):
     classes = numpy.zeros((k, len(samples)), dtype=numpy.bool)
 
     ## Randomize initial centers locations over x and y's range
-    # Get range
-    x = samples[...,0]
-    y = samples[...,1]
-    min_x, max_x = (min(x), max(x))
-    min_y, max_y = (min(y), max(y))
+    range_max = numpy.max(samples, axis=0)
+    range_min = numpy.min(samples, axis=0)
     # Get random center location
     for i in range(k):
-        center_x = min_x + max_x*random.random()
-        center_y = min_y + max_y * random.random()
-        centers.append(numpy.array((center_x, center_y)))
+        random_coords = numpy.array([ random.random() for i in range(len(range_max)) ])
+        random_coords = range_max*random_coords + range_min
+        centers.append(random_coords)
 
     ## Run the alrogirthm until we improve by less than given threshold
     # Set high initial error values to make sure the first iteration is run
