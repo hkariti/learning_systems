@@ -22,7 +22,7 @@ def kmeans(samples, k, threshold=0.1):
         centers.append(numpy.array((center_x, center_y)))
 
     ## Run the alrogirthm until we improve by less than given threshold
-    # Set initial error values to make sure the first iteration is run
+    # Set high initial error values to make sure the first iteration is run
     error = 100*threshold
     prev_error = 2*error
     iterations = 0
