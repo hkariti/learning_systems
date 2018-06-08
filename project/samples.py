@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 bmat = scipy.io.loadmat("BreastCancerData.mat")
 
 X = numpy.transpose(bmat['X'])
-y = bmat['y']
+y = bmat['y'][...,0]
 
 _pca = PCA(n_components=2)
 X_2d = _pca.fit_transform(X)
@@ -20,7 +20,7 @@ training_set_idx = numpy.ones(len(y), dtype=numpy.bool) ^ test_set_idx
 def graph_tagged_samples_2d():
     scatter_x = X_2d[...,0]
     scatter_y = X_2d[...,1]
-    good_indices = (y == 0)[...,0]
+    good_indices = y == 0
     bad_indices = numpy.invert(good_indices)
     plt.figure()
     plt.scatter(scatter_x[good_indices],scatter_y[good_indices], c='b', s=3)
