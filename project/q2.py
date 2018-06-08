@@ -13,24 +13,16 @@ test_set = samples.X[samples.test_set_idx]
 test_tags = samples.y[samples.test_set_idx]
 test_set_size = len(test_tags)
 
-print("* Training Naive Bayes model...", end="")
 start_time = time.time()
+print("* Training Naive Bayes model")
 model.train_model(training_set, training_tags)
-end_time = time.time()
-print("Done. Took {0:.2f}ms".format(1000*(end_time-start_time)))
 
-print("* Testing model with Training set....", end="")
-start_time = time.time()
+print("* Testing model with Training set")
 error = model.test_model(training_set, training_tags)
-end_time = time.time()
-print("Done. Took {0:.2f}ms".format(1000*(end_time-start_time)))
-error_pct = 100*error/training_set_size
-print("Total error: {0} out of {1} samples. Error pct: {2:.2f}".format(error, training_set_size, error_pct))
+print("Total error: {0:.2f}%".format(100*error))
 
-print("* Testing model with Test set...", end="")
-start_time = time.time()
+print("* Testing model with Test set")
 error = model.test_model(test_set, test_tags)
+print("Total error: {0:.2f}%".format(100*error))
 end_time = time.time()
-print("Done. Took {0:.2f}ms".format(1000*(end_time-start_time)))
-error_pct = 100*error/test_set_size
-print("Total error: {0} out of {1} samples. Error pct: {2:.2f}".format(error, test_set_size, error_pct))
+print("Total run time: {0:.2f}ms".format(1000*(end_time-start_time)))

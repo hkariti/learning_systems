@@ -36,22 +36,23 @@ class NaiveBayesModel:
     def test_model(self, test_set, test_tags):
         """
         Classify the test set, compare against its tags and return the error
-        Error is a simple sum of indicators: class != tag adds 1 to the error
+        Error is a simple sum of indicators divided by total sample count: class != tag adds 1/n to the error
         """
         classifications = numpy.array([ self.classify(s) for s in test_set ])
         error_vec = classifications != test_tags
 
-        return error_vec.sum()
+        return error_vec.sum()/len(test_tags)
 
     def _mle_independent_normal_by_class(self, training_set, training_tags, classification):
         """ Approximate parameters of a normal distribution for independent components of the given sample set """
         selected_samples = training_set[training_tags == classification]
         # Simple mean for each coordinate
         mean_vec = numpy.mean(selected_samples, axis=0)
-        # Caculate ||selected_samples - mean||^2 for each coordinate
-        mean_mat = numpy.tile(mean_vec, (len(selected_samples), 1))
+        # Caculate 1/n * ||selected_samples - mean||^2 for each coordinate
+        sample_count = len(selected_samples)
+        mean_mat = numpy.tile(mean_vec, (sample_count, 1))
         distance_vec = selected_samples - mean_mat
-        variance_vec = numpy.linalg.norm(distance_vec, axis=0)
+        variance_vec = 1/sample_count * numpy.power(distance_vec, 2).sum(axis=0)
 
         return mean_vec, variance_vec
 
@@ -71,7 +72,7 @@ class NaiveBayesModel:
         """
         mean_vec = self._sample_mean_per_class[classification]
         variance_vec = self._sample_variance_per_class[classification]
-        prob_vec = norm.pdf(sample, loc=mean_vec, scale=variance_vec)
+        prob_vec = norm.pdf(sample, loc=mean_vec, scale=numpy.sqrt(variance_vec))
         prob_x_given_y = prob_vec.prod()
 
         # Get P(y), we have this from training too.
