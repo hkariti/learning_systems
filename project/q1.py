@@ -1,3 +1,4 @@
+import time
 import numpy
 import matplotlib.pyplot as plt
 
@@ -23,21 +24,30 @@ def graph_kmeans(classes):
     return f
 
 def run_kmeans_on_all():
+    start = time.time();
     print("Running kmeans on all samples with K={0}".format(K))
     classes,_,_,_ = kmeans.kmeans(samples.X, K)
+    end = time.time();
+    print("Took {0:0.2f}ms".format(1000*(end-start)))
     print("Class 1: ", numpy.nonzero(classes[0])[0])
     print("Class 2: ", numpy.nonzero(classes[1])[0])
 
 def run_kmeans_2d():
     print("Running kmeans in all samples in 2d with K={0}".format(K))
+    start = time.time();
     classes,_,_,_ = kmeans.kmeans(samples.X_2d, K)
+    end = time.time();
+    print("Took {0:0.2f}ms".format(1000*(end-start)))
 
     plt_tagged = samples.graph_tagged_samples_2d()
     plt_kmeans = graph_kmeans(classes)
 
     new_k = 5
+    start = time.time();
     print("Running kmeans in all samples in 2d with K={0}".format(new_k))
     classes,_,_,_ = kmeans.kmeans(samples.X_2d, new_k)
+    end = time.time();
+    print("Took {0:0.2f}ms".format(1000*(end-start)))
     plt_kmeans_new_k = graph_kmeans(classes)
 
     return plt_tagged, plt_kmeans, plt_kmeans_new_k
