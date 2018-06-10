@@ -22,10 +22,11 @@ def graph_tagged_samples_2d():
     scatter_y = X_2d[...,1]
     good_indices = y == 0
     bad_indices = numpy.invert(good_indices)
-    plt.figure()
+    f = plt.figure()
     plt.scatter(scatter_x[good_indices],scatter_y[good_indices], c='b', s=3)
     plt.scatter(scatter_x[bad_indices], scatter_y[bad_indices], c='r', s=3)
     plt.xlabel("Component 1")
     plt.ylabel("Component 2")
     plt.title("Tagged samples in 2d")
-    return plt.legend(["Benign", "Malignant"])
+    plt.legend(["Benign", "Malignant"])
+    return f

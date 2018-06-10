@@ -9,7 +9,7 @@ K = 2
 def graph_kmeans(classes):
     k = len(classes)
     legend = []
-    plt.figure()
+    f = plt.figure()
     for i in range(k):
         selected = samples.X_2d[classes[i]]
         x = selected[...,0]
@@ -19,7 +19,8 @@ def graph_kmeans(classes):
     plt.legend(legend)
     plt.title("K-mean with K={} in 2d".format(k))
     plt.xlabel("Component 1")
-    return plt.ylabel("Component 2")
+    plt.ylabel("Component 2")
+    return f
 
 def run_kmeans_on_all():
     print("Running kmeans on all samples with K={0}".format(K))
