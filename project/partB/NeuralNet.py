@@ -62,18 +62,25 @@ class NeuralNet:
 
     def _feed_forward(self, samples):
         layer_count = len(self.weights)
-        out = samples
-        for layer in range(layer_count):
-            weights = self.weights[layer]
-            biases = self.biases[layer]
-            activation_func = self.activation_funcs[layer]
-            prev_out = out
-            self._outputs.append(prev_out)
-            v = weights.dot(prev_out) + biases
-            self._inputs.append(v)
-            out = activation_func(v)
+        outs = []
+        for sample in samples.transpose():
+            outputs = []
+            inputs = []
+            out = sample
+            for layer in range(layer_count):
+                weights = self.weights[layer]
+                biases = self.biases[layer]
+                activation_func = self.activation_funcs[layer]
+                prev_out = out
+                outputs.append(prev_out)
+                v = weights.dot(prev_out) + biases
+                inputs.append(v)
+                out = activation_func(v)
+            self._outputs.append(outputs)
+            self._inputs.append(inputs)
+            outs.append(out[0])
 
-        return out[0]
+        return np.array(outs)
 
     def classify(self, samples):
         """
@@ -85,13 +92,22 @@ class NeuralNet:
         return -np.sum(output_tags*np.log(output))
 
     def _calculate_gradient_batch(self, output, output_tags):
-        deltas_out = output_tags - output
-        deltas_out = deltas_out.reshape((len(deltas_out) ,1))
-        deltas_hidden = self.derivative_func(self._inputs[0]).dot(deltas_out.dot(self.weights[1]))
-        self._detlas = [deltas_hidden, deltas_out]
+        d_weights_0 = 0
+        d_weights_1 = np.zeros((self.output_layer_size, self.middle_layer_size))
+        d_weights_0 = np.zeros((self.middle_layer_size, self.input_layer_size))
+        for sample_idx in range(len(output)):
+            # Calculate delta for output layer
+            delta_out = output_tags[sample_idx] - output[sample_idx]
+            # Calculate gradient for each input
+            for output_neuron in range(self.output_layer_size):
+                for neuron in range(self.middle_layer_size):
+                    d_weights_1[output_neuron, neuron] = d_weights_1[output_neuron, neuron] - (delta_out * self._outputs[sample_idx][1][neuron])
 
-        d_weights_0 = -np.sum(deltas_hidden * self._outputs[0])
-        d_weights_1 = -np.sum(deltas_out * self._outputs[1])
+            # Calculate delta for each neuron in the hidden layer and gradient for each of their inputs
+            for neuron in range(self.middle_layer_size):
+                delta = self.derivative_func(self._inputs[sample_idx][0][neuron])*np.sum(self.weights[1][:,neuron]*delta_out)
+                for input_neuron in range(self.input_layer_size):
+                    d_weights_0[neuron, input_neuron] = d_weights_0[neuron, input_neuron] - (delta * self._outputs[sample_idx][0][input_neuron])
 
         return [d_weights_0, d_weights_1]
 
