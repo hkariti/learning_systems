@@ -3,7 +3,7 @@ import numpy as np
 class NeuralNet:
     def ReLU(x):
         return x * (x>0)
-    
+
     def tanh(x):
         return np.tanh(x/2)
 
@@ -17,7 +17,7 @@ class NeuralNet:
         log_result = -np.logaddexp(0, -x)
         result = np.exp(log_result)
         return result
-    
+
     def log_d(x):
         return NeuralNet.log(x)*(1-NeuralNet.log(x))
 
@@ -93,7 +93,7 @@ class NeuralNet:
         return np.sum((output_tags-output[...,0])**2)
 
     def _calculate_gradient_batch(self, output, output_tags):
-        # Calculate the gradient for each layer's weight matrix, using the serial version of the BP algorithm. 
+        # Calculate the gradient for each layer's weight matrix, using the serial version of the BP algorithm.
         #   This could probably be done in a more generic way and much more efficiently using
         #   matrices properly, but matrices confuse me so for loops it is.
 
@@ -122,7 +122,7 @@ class NeuralNet:
     def train_model(self, training_set, training_tags, learning_rate=0.1, threshold=1e-4, max_iterations=1000000):
         """
         Train the neural net via the given training set at the given learning_rate
-        
+
         Learning is complete after the total error or error improvement is beneath the given threshold.
         Will raise RuntimeError if learning didn't complete after max_iterations iterations.
         """
