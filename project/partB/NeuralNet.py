@@ -92,7 +92,7 @@ class NeuralNet:
         # Use square error
         return np.sum((output_tags-output[...,0])**2)
 
-    def _calculate_gradient_batch(self, output, output_tags):
+    def _calculate_gradient_serial(self, output, output_tags):
         # Calculate the gradient for each layer's weight matrix, using the serial version of the BP algorithm.
         #   This could probably be done in a more generic way and much more efficiently using
         #   matrices properly, but matrices confuse me so for loops it is.
@@ -135,7 +135,7 @@ class NeuralNet:
             iterations = iterations + 1
             if (iterations > max_iterations):
                 raise RuntimeError("Didn't converge to threshold {} after {} iterations. Current error is {}".format(threshold, max_iterations, current_error))
-            [gradient_0, gradient_1] = self._calculate_gradient_batch(output, training_tags)
+            [gradient_0, gradient_1] = self._calculate_gradient_serial(output, training_tags)
             self.weights[0] = self.weights[0] - learning_rate * gradient_0
             self.weights[1] = self.weights[1] - learning_rate * gradient_1
             output = self._feed_forward(training_set)
