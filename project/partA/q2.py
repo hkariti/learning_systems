@@ -6,8 +6,8 @@ import naive_bayes
 
 classes = [0,1]
 model = naive_bayes.NaiveBayesModel(classes)
-training_set = samples.X[samples.training_set_idx]
-training_tags = samples.y[samples.training_set_idx]
+training_set = samples.X[samples.total_training_set_idx]
+training_tags = samples.y[samples.total_training_set_idx]
 training_set_size = len(training_tags)
 test_set = samples.X[samples.test_set_idx]
 test_tags = samples.y[samples.test_set_idx]

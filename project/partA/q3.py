@@ -31,8 +31,8 @@ def add_bias_to_array(X):
     X = np.append(X, bias, axis=1)
     return X
 
-training_set = samples.X[samples.training_set_idx]
-training_tags = samples.y[samples.training_set_idx]
+training_set = samples.X[samples.total_training_set_idx]
+training_tags = samples.y[samples.total_training_set_idx]
 training_set_size = len(training_tags)
 test_set = samples.X[samples.test_set_idx]
 test_tags = samples.y[samples.test_set_idx]
