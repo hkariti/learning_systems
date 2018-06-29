@@ -8,29 +8,26 @@ np.seterr(all='raise')
 
 def logistic_func(z):
     try:
-        return 1 / (1 + np.exp(-z))
+        if np.isscalar(z):
+            if z > 100:
+                return 1
+            if z < -100:
+                return 0
+            return 1 / (1 + np.exp(-z))
+        else:
+            log_reg = np.zeros(np.size(z))
+            for i in range(len(z)):
+                if z[i] > 600:
+                    log_reg[i] = 1
+                elif z[i] < -600:
+                    log_reg[i] = 0
+                else:
+                    log_reg[i] =  1 / (1 + np.exp(-z[i]))
+            return log_reg
     except:
         print(z)
-        return 1 if z > 10 else 0
         raise
         
-# error_func = lambda tag, output: np.log(output) if tag == 1 else np.log(1-output)
-def error_func(tag, output):
-    try:
-        if np.abs(tag - output) > 1:
-            print("ERROR")
-            print(tag, output)
-        if np.abs(tag - output) >= 0.5:
-            return 1
-        else:
-            return 0
-#         if np.abs(tag - output) <= -0.5 or np.append(tag, error):
-#             print(error)
-#             return np.log(0.5)
-    except:
-        pass
-    return error
-
 def shuffle_set(training_set, training_tags):
     unified = np.zeros([np.size(training_set,0), np.size(training_set,1)+1])
     unified[:,0] = training_tags
@@ -46,7 +43,7 @@ class LogisticRegressionModel:
         Init the Logistic Regression Model with number of features
         """
         self._num_of_features = num_of_features
-        self._weights = (np.random.rand(num_of_features) * 2 - 1)
+        self._weights = (np.random.rand(num_of_features + 1) * 2 - 1) / num_of_features
         self._samples_downsize_factor = 0
         self._mean = np.mean(X, axis=0)
         self._std = np.std(X, axis=0)
@@ -56,33 +53,28 @@ class LogisticRegressionModel:
             X[:,i] = (X[:,i] - self._mean[i]) / self._std[i]
         return X
 
-    def calc_error2(self, samples, tags):
-        error = 0
-        output = logistic_func(np.inner(samples, self._weights))
-        for out, tag in zip(output, tags):
-            error += error_func(tag, out)
-        return np.abs(error / len(tags))
-
     def calc_error(self, samples, tags):
         error = 0
         inner = np.inner(samples, self._weights)
-        try:
-            for out, tag in zip(inner, tags):
-                if tag == 1 and out > 0:
-                    continue
-                if tag == 0 and out < 0:
-                    continue
-                else:
-                    error += 1
-            return 0.7*np.exp(-0.002*self.iteration)
-        except:
-            return np.abs(error / len(tags))
+        for out, tag in zip(inner, tags):
+            if tag == 1 and out > 0:
+                continue
+            if tag == 0 and out < 0:
+                continue
+            else:
+                error += 1
+        return error / len(tags)
+    
+    def add_bias_to_array(self, t_set):
+        bias = np.ones((np.size(t_set, 0), 1))
+        t_set = np.append(t_set, bias, axis=1)
+        return t_set
 
     def train_model(self, training_set, training_tags, learning_rate, batch=False, threshold=0.0001):
         if self._samples_downsize_factor == 0:
-            self._samples_downsize_factor = (np.max(training_set) + np.min(training_set)) * 10
-        training_set /= self._samples_downsize_factor
-#         training_set = self.normalize(training_set)
+            self._samples_downsize_factor = (np.max(training_set) + np.min(training_set))
+        training_set = self.normalize(training_set)
+        training_set = self.add_bias_to_array(training_set)
         self.iteration = 0
         error = self.calc_error(training_set, training_tags)
         errors = [error]
@@ -103,11 +95,10 @@ class LogisticRegressionModel:
                     output = logistic_func(np.inner(sample, self._weights))
                     weights_deltas = np.multiply((label - output), sample)
                     self._weights += weights_deltas * learning_rate
-
             error = self.calc_error(training_set, training_tags)
             errors.append(error)
             
-            if np.abs(prev_error - error) <= threshold and self.iteration > 10:
+            if np.abs(prev_error - error) <= threshold:
                 break
             self.iteration += 1
             if self.iteration > 5000: # just if it wont converge
@@ -117,20 +108,14 @@ class LogisticRegressionModel:
     
     def classify(self, sample):
         """ Return the class (y) for the given sample (x)"""
-        try:
-            return 1 if np.inner(sample, self._weights) > 0 else 0
-        except:
-            print(np.inner(sample, self._weights))
-            import pdb; pdb.set_trace()
-        return 1 if logistic_func(np.inner(sample, self._weights)) > 0.5 else 0
+        return 1 if np.inner(sample, self._weights) > 0 else 0
 
     def test_model(self, test_set, test_tags):
         """
         Classify the test set, compare against its tags and return the error
         """
-#         test_set = self.normalize(test_set)
-        test_set /= self._samples_downsize_factor
+        test_set = self.normalize(test_set)
+        test_set = self.add_bias_to_array(test_set)
         classifications = np.array([ self.classify(s) for s in test_set ])
         error = self.calc_error(test_set, test_tags)
         return classifications, error
-        
