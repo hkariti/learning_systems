@@ -49,9 +49,9 @@ class NeuralNet:
         # In each weight matrix, each row is a neuron in the receiving layer.
         self.weights = []
         # Init weights for input->hidden. we add an extra column for the bias of each neuron in this layer
-        self.weights.append(np.random.random((middle_layer_size, self._input_layer_size_with_bias)))
+        self.weights.append((np.random.random((middle_layer_size, self._input_layer_size_with_bias)) * 2 - 1) / np.sqrt(self._input_layer_size_with_bias))
         # Init weights for hidden->output. we add an extra column for the bias of each neuron in this layer
-        self.weights.append(np.random.random((self.output_layer_size, self._middle_layer_size_with_bias)))
+        self.weights.append((np.random.random((self.output_layer_size, self._middle_layer_size_with_bias)) * 2 - 1) / np.sqrt(self._middle_layer_size_with_bias))
 
     def _feed_forward(self, samples):
         layer_count = len(self.weights)
