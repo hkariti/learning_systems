@@ -24,7 +24,7 @@ class NeuralNet:
     FUNCS = dict(relu=ReLU, log=log, tanh=tanh)
     DERIVATIVES = dict(relu=ReLU_d, log=log_d, tanh=tanh_d)
 
-    def __init__(self, middle_layer_size, activation_func, input_layer_size=30):
+    def __init__(self, middle_layer_size, activation_func, input_layer_size=30, weights=None):
         """
         Initialize a NN with 1 hidden layer of the given size and activation function.
 
@@ -47,11 +47,14 @@ class NeuralNet:
 
         # Init wights and biases.
         # In each weight matrix, each row is a neuron in the receiving layer.
-        self.weights = []
-        # Init weights for input->hidden. we add an extra column for the bias of each neuron in this layer
-        self.weights.append((np.random.random((middle_layer_size, self._input_layer_size_with_bias)) * 2 - 1) / np.sqrt(self._input_layer_size_with_bias))
-        # Init weights for hidden->output. we add an extra column for the bias of each neuron in this layer
-        self.weights.append((np.random.random((self.output_layer_size, self._middle_layer_size_with_bias)) * 2 - 1) / np.sqrt(self._middle_layer_size_with_bias))
+        if not weights:
+            self.weights = []
+            # Init weights for input->hidden. we add an extra column for the bias of each neuron in this layer
+            self.weights.append((np.random.random((middle_layer_size, self._input_layer_size_with_bias)) * 2 - 1) / np.sqrt(self._input_layer_size_with_bias))
+            # Init weights for hidden->output. we add an extra column for the bias of each neuron in this layer
+            self.weights.append((np.random.random((self.output_layer_size, self._middle_layer_size_with_bias)) * 2 - 1) / np.sqrt(self._middle_layer_size_with_bias))
+        else:
+            self.weights = weights
 
     def _feed_forward(self, samples):
         layer_count = len(self.weights)
@@ -92,6 +95,14 @@ class NeuralNet:
         # Use square error
         return np.sum((output_tags-output[...,0])**2)
 
+    def _classify_success_rate(self, output, output_tags):
+        output_length = output.size
+        output = output[..., 0] > 0.5
+        output_tags = output_tags == 1
+        output_correct = np.logical_not(output_tags ^ output)
+        output_correct = np.where(output_correct)
+        return output_correct[0].size / output_length
+
     def _calculate_gradient_serial(self, output, output_tags):
         # Calculate the gradient for each layer's weight matrix, using the serial version of the BP algorithm.
         #   This could probably be done in a more generic way and much more efficiently using
@@ -129,7 +140,7 @@ class NeuralNet:
         output = self._feed_forward(training_set)
         current_error = self._error(output, training_tags)
         prev_error = 0
-        learning_progress = [current_error]
+        learning_progress = [self._classify_success_rate(output, training_tags)]
         iterations = 0
         while (current_error > threshold and np.abs(current_error - prev_error) > threshold):
             iterations = iterations + 1
@@ -141,7 +152,7 @@ class NeuralNet:
             output = self._feed_forward(training_set)
             prev_error = current_error
             current_error = self._error(output, training_tags)
-            learning_progress.append(current_error)
+            learning_progress.append(self._classify_success_rate(output, training_tags))
 
         return learning_progress
 
@@ -152,4 +163,4 @@ class NeuralNet:
         Error is calculated using square error.
         """
         output = self._feed_forward(test_set)
-        return self._error(output, test_tags)
+        return self._classify_success_rate(output, test_tags)
